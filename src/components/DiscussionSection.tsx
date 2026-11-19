@@ -2,12 +2,14 @@ import { useEffect, useState, type FormEvent } from 'react';
 import { MessageSquarePlus, ThumbsUp, Trash2 } from 'lucide-react';
 import {
   INITIAL_COMMENTS,
+  UI_COPY,
   type ArchitecturalComment,
+  type Language,
 } from '../data/blueprints';
 
-const STORAGE_KEY = 'horizon_blueprint_comments_v1';
+const STORAGE_KEY = 'aether_lab_comments_v1';
 
-function formatVietnameseTimestamp(date: Date): string {
+function formatTimestamp(date: Date): string {
   const pad = (n: number) => String(n).padStart(2, '0');
   const day = pad(date.getDate());
   const month = pad(date.getMonth() + 1);
@@ -17,7 +19,13 @@ function formatVietnameseTimestamp(date: Date): string {
   return `${day}/${month}/${year} · ${hours}:${minutes}`;
 }
 
-export function DiscussionSection() {
+interface DiscussionSectionProps {
+  lang: Language;
+}
+
+export function DiscussionSection({ lang }: DiscussionSectionProps) {
+  const t = UI_COPY[lang].discussion;
+
   const [comments, setComments] = useState<ArchitecturalComment[]>(() => {
     try {
       const saved = localStorage.getItem(STORAGE_KEY);
@@ -53,7 +61,7 @@ export function DiscussionSection() {
     const trimmedContent = content.trim();
 
     if (!trimmedAuthor || !trimmedContent) {
-      setErrorMsg('Vui lòng nhập tên của bạn và nội dung góp ý kiến trúc.');
+      setErrorMsg(t.validationError);
       return;
     }
 
@@ -61,9 +69,9 @@ export function DiscussionSection() {
     const newComment: ArchitecturalComment = {
       id: `comment-${Date.now()}`,
       author: trimmedAuthor,
-      role: role.trim() || 'Độc giả & Người đóng góp',
+      role: role.trim() || t.defaultRole,
       content: trimmedContent,
-      createdAt: formatVietnameseTimestamp(new Date()),
+      createdAt: formatTimestamp(new Date()),
       likes: 0,
       isUserCreated: true,
     };
@@ -99,18 +107,16 @@ export function DiscussionSection() {
       <div className="max-w-3xl mx-auto px-4 sm:px-6 py-14 sm:py-20">
         <div className="flex flex-wrap items-baseline justify-between gap-4 mb-8">
           <div>
-            <p className="font-mono text-xs text-[#00F0FF] mb-2">
-              Phản biện Kỹ thuật · Lưu trữ Trình duyệt
-            </p>
+            <p className="font-mono text-xs text-[#00F0FF] mb-2">{t.kicker}</p>
             <h2
               id="discussion-heading"
               className="font-display text-2xl sm:text-3xl font-bold text-slate-50 tracking-tight"
             >
-              Thảo luận & Góp ý Kiến trúc
+              {t.heading}
             </h2>
           </div>
           <span className="font-mono text-xs text-slate-400 tabular-nums">
-            {comments.length} ý kiến đóng góp
+            {comments.length} {t.countSuffix}
           </span>
         </div>
 
@@ -125,14 +131,14 @@ export function DiscussionSection() {
                 htmlFor="comment-author"
                 className="block text-xs font-medium text-slate-300 mb-1.5"
               >
-                Tên hoặc bí danh của bạn *
+                {t.authorLabel}
               </label>
               <input
                 id="comment-author"
                 type="text"
                 value={author}
                 onChange={(e) => setAuthor(e.target.value)}
-                placeholder="Ví dụ: Trần Gia Huy"
+                placeholder={t.authorPlaceholder}
                 className="w-full px-3.5 py-2.5 text-sm text-slate-100 placeholder-slate-500 bg-[#0B0F19] border border-slate-800 focus:border-[#00F0FF] focus:outline-none rounded-lg transition-colors"
               />
             </div>
@@ -142,14 +148,14 @@ export function DiscussionSection() {
                 htmlFor="comment-role"
                 className="block text-xs font-medium text-slate-300 mb-1.5"
               >
-                Chuyên môn (không bắt buộc)
+                {t.roleLabel}
               </label>
               <input
                 id="comment-role"
                 type="text"
                 value={role}
                 onChange={(e) => setRole(e.target.value)}
-                placeholder="Ví dụ: Kỹ sư Nhúng / Vật lý"
+                placeholder={t.rolePlaceholder}
                 className="w-full px-3.5 py-2.5 text-sm text-slate-100 placeholder-slate-500 bg-[#0B0F19] border border-slate-800 focus:border-[#00F0FF] focus:outline-none rounded-lg transition-colors"
               />
             </div>
@@ -160,14 +166,14 @@ export function DiscussionSection() {
               htmlFor="comment-content"
               className="block text-xs font-medium text-slate-300 mb-1.5"
             >
-              Đề xuất, phản biện hoặc câu hỏi về kiến trúc hệ thống *
+              {t.contentLabel}
             </label>
             <textarea
               id="comment-content"
               rows={4}
               value={content}
               onChange={(e) => setContent(e.target.value)}
-              placeholder="Chia sẻ góc nhìn của bạn về tàu mẹ máy chủ lượng tử, truyền tin laser QKD hoặc bầy robot bề mặt..."
+              placeholder={t.contentPlaceholder}
               className="w-full px-3.5 py-2.5 text-sm text-slate-100 placeholder-slate-500 bg-[#0B0F19] border border-slate-800 focus:border-[#00F0FF] focus:outline-none rounded-lg transition-colors resize-y"
             />
           </div>
@@ -179,15 +185,13 @@ export function DiscussionSection() {
           )}
 
           <div className="flex flex-wrap items-center justify-between gap-3 pt-1">
-            <span className="text-xs text-slate-400">
-              Bình luận được lưu tự động trong localStorage của trình duyệt.
-            </span>
+            <span className="text-xs text-slate-400">{t.storageNote}</span>
             <button
               type="submit"
               className="inline-flex items-center gap-2 px-5 py-2.5 text-xs sm:text-sm font-semibold text-[#070A12] bg-[#00F0FF] hover:bg-[#33F3FF] rounded-lg transition-colors whitespace-nowrap shrink-0 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00F0FF]"
             >
               <MessageSquarePlus className="w-4 h-4" aria-hidden="true" />
-              <span>Gửi góp ý kiến trúc</span>
+              <span>{t.submitBtn}</span>
             </button>
           </div>
         </form>
@@ -195,9 +199,7 @@ export function DiscussionSection() {
         {/* Comments List */}
         {comments.length === 0 ? (
           <div className="bg-[#111827]/60 border border-slate-800 rounded-xl p-8 text-center">
-            <p className="text-sm text-slate-400">
-              Chưa có ý kiến thảo luận nào. Hãy là người đầu tiên đóng góp phản biện cho bản thiết kế này.
-            </p>
+            <p className="text-sm text-slate-400">{t.emptyState}</p>
           </div>
         ) : (
           <div className="space-y-4">
@@ -241,7 +243,7 @@ export function DiscussionSection() {
                         <button
                           type="button"
                           onClick={() => handleDelete(comment.id)}
-                          aria-label="Xóa bình luận của bạn"
+                          aria-label={t.deleteAria}
                           className="p-1.5 text-slate-500 hover:text-rose-400 rounded-lg border border-transparent hover:border-slate-800 transition-colors cursor-pointer"
                         >
                           <Trash2 className="w-3.5 h-3.5" aria-hidden="true" />

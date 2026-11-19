@@ -1,49 +1,63 @@
-import type { CategoryKey } from '../data/blueprints';
-import type { NavDestination } from './Header';
+import { UI_COPY, type Language, type ViewRoute } from '../data/blueprints';
 
 interface FooterProps {
-  onNavigate: (dest: NavDestination, categoryFilter?: CategoryKey) => void;
+  lang: Language;
+  onNavigate: (view: ViewRoute) => void;
 }
 
-export function Footer({ onNavigate }: FooterProps) {
+export function Footer({ lang, onNavigate }: FooterProps) {
+  const t = UI_COPY[lang];
+
   return (
     <footer className="bg-[#0B0F19] py-10">
-      <div className="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 text-xs text-slate-400">
+      <div className="max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 text-xs text-slate-400">
         <div className="space-y-1">
           <div className="font-display text-sm font-semibold text-slate-200">
-            HORIZON BLUEPRINT
+            {t.brand}
           </div>
-          <p>Lưu trữ những bản thiết kế cho ngày mai · © 2026</p>
+          <p>
+            {t.slogan} · {t.footer.copyright}
+          </p>
         </div>
 
-        <nav aria-label="Liên kết chân trang" className="flex flex-wrap items-center gap-6">
+        <nav
+          aria-label={lang === 'vi' ? 'Liên kết chân trang' : 'Footer Navigation'}
+          className="flex flex-wrap items-center gap-6"
+        >
           <button
             type="button"
-            onClick={() => onNavigate('home', 'all')}
+            onClick={() => onNavigate('home')}
             className="hover:text-[#00F0FF] transition-colors cursor-pointer whitespace-nowrap"
           >
-            Trang chủ
+            {t.nav.home}
           </button>
           <button
             type="button"
-            onClick={() => onNavigate('space-quantum', 'space-quantum')}
+            onClick={() => onNavigate('space-quantum')}
             className="hover:text-[#00F0FF] transition-colors cursor-pointer whitespace-nowrap"
           >
-            Vũ trụ & Lượng tử
+            {t.nav.spaceQuantum}
           </button>
           <button
             type="button"
-            onClick={() => onNavigate('ai-robotics', 'ai-robotics')}
+            onClick={() => onNavigate('ai-robotics')}
             className="hover:text-[#00F0FF] transition-colors cursor-pointer whitespace-nowrap"
           >
-            AI & Robot
+            {t.nav.aiRobotics}
+          </button>
+          <button
+            type="button"
+            onClick={() => onNavigate('materials-energy')}
+            className="hover:text-[#00F0FF] transition-colors cursor-pointer whitespace-nowrap"
+          >
+            {t.nav.materialsEnergy}
           </button>
           <button
             type="button"
             onClick={() => onNavigate('about')}
             className="hover:text-[#00F0FF] transition-colors cursor-pointer whitespace-nowrap"
           >
-            Giới thiệu
+            {t.nav.about}
           </button>
         </nav>
       </div>

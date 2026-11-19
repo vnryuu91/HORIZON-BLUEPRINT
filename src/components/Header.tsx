@@ -1,57 +1,64 @@
 import { useState } from 'react';
-import { Menu, X, Maximize2 } from 'lucide-react';
-import type { CategoryKey } from '../data/blueprints';
-
-export type NavDestination = 'home' | 'space-quantum' | 'ai-robotics' | 'about';
+import { Menu, X } from 'lucide-react';
+import { UI_COPY, type Language, type ViewRoute } from '../data/blueprints';
 
 interface HeaderProps {
-  activeNav: NavDestination;
-  onNavigate: (dest: NavDestination, categoryFilter?: CategoryKey) => void;
-  onToggleFocusMode: () => void;
+  lang: Language;
+  onChangeLang: (lang: Language) => void;
+  activeView: ViewRoute;
+  onNavigate: (view: ViewRoute) => void;
 }
 
-const NAV_ITEMS: { key: NavDestination; label: string; filter?: CategoryKey }[] = [
-  { key: 'home', label: 'Trang chủ', filter: 'all' },
-  { key: 'space-quantum', label: 'Vũ trụ & Lượng tử', filter: 'space-quantum' },
-  { key: 'ai-robotics', label: 'AI & Robot', filter: 'ai-robotics' },
-  { key: 'about', label: 'Giới thiệu' },
-];
-
-export function Header({ activeNav, onNavigate, onToggleFocusMode }: HeaderProps) {
+export function Header({
+  lang,
+  onChangeLang,
+  activeView,
+  onNavigate,
+}: HeaderProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const t = UI_COPY[lang];
 
-  const handleNavClick = (item: (typeof NAV_ITEMS)[number]) => {
-    onNavigate(item.key, item.filter);
+  const navItems: { key: ViewRoute; label: string }[] = [
+    { key: 'home', label: t.nav.home },
+    { key: 'space-quantum', label: t.nav.spaceQuantum },
+    { key: 'ai-robotics', label: t.nav.aiRobotics },
+    { key: 'materials-energy', label: t.nav.materialsEnergy },
+    { key: 'about', label: t.nav.about },
+  ];
+
+  const handleNavClick = (view: ViewRoute) => {
+    onNavigate(view);
     setMobileMenuOpen(false);
   };
 
   return (
     <header className="sticky top-0 z-40 bg-[#0B0F19]/92 backdrop-blur-md border-b border-slate-800/80">
-      <div className="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8 h-14 sm:h-16 flex items-center justify-between gap-8">
-        {/* Zone 1: Single-line Brand Wordmark */}
+      <div className="max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8 h-14 sm:h-16 flex items-center justify-between gap-6">
+        {/* Zone 1: Brand Wordmark */}
         <a
-          href="#top"
+          href="#home"
           onClick={(e) => {
             e.preventDefault();
-            onNavigate('home', 'all');
+            handleNavClick('home');
           }}
-          className="font-display text-lg sm:text-xl font-bold tracking-tight text-slate-100 hover:text-[#00F0FF] transition-colors whitespace-nowrap shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00F0FF] rounded"
+          className="font-display text-base sm:text-lg font-bold tracking-tight text-slate-100 hover:text-[#00F0FF] transition-colors whitespace-nowrap shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00F0FF] rounded"
         >
-          HORIZON BLUEPRINT
+          {t.brand}
         </a>
 
-        {/* Zone 2: 4 Single-line Nav Links */}
+        {/* Zone 2: 5 Multi-View Nav Links */}
         <nav
-          aria-label="Điều hướng chính"
-          className="hidden md:flex items-center gap-7 text-sm font-medium text-slate-300"
+          aria-label={lang === 'vi' ? 'Điều hướng chính' : 'Primary Navigation'}
+          className="hidden lg:flex items-center gap-5 xl:gap-7 text-sm font-medium text-slate-300"
         >
-          {NAV_ITEMS.map((item) => {
-            const isActive = activeNav === item.key;
+          {navItems.map((item) => {
+            const isActive = activeView === item.key;
             return (
               <button
                 key={item.key}
                 type="button"
-                onClick={() => handleNavClick(item)}
+                onClick={() => handleNavClick(item.key)}
+                aria-current={isActive ? 'page' : undefined}
                 className={`relative py-1.5 whitespace-nowrap shrink-0 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00F0FF] rounded ${
                   isActive
                     ? 'text-[#00F0FF]'
@@ -70,23 +77,53 @@ export function Header({ activeNav, onNavigate, onToggleFocusMode }: HeaderProps
           })}
         </nav>
 
-        {/* Zone 3: 1 Primary Action + Mobile Drawer Toggle */}
+        {/* Zone 3: Prominent VI | EN Switcher + Mobile/Tablet Drawer Toggle */}
         <div className="flex items-center gap-3 shrink-0">
-          <button
-            type="button"
-            onClick={onToggleFocusMode}
-            className="hidden sm:inline-flex items-center gap-2 px-4 py-2 text-xs font-semibold text-[#070A12] bg-[#00F0FF] hover:bg-[#33F3FF] rounded-lg transition-colors whitespace-nowrap shrink-0 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00F0FF] focus-visible:ring-offset-2 focus-visible:ring-offset-[#0B0F19]"
+          <div
+            role="group"
+            aria-label={lang === 'vi' ? 'Chọn ngôn ngữ' : 'Language switcher'}
+            className="inline-flex items-center p-0.5 bg-[#111827] border border-slate-700/80 rounded-lg"
           >
-            <Maximize2 className="w-3.5 h-3.5" aria-hidden="true" />
-            <span>Chế độ tập trung</span>
-          </button>
+            <button
+              type="button"
+              onClick={() => onChangeLang('vi')}
+              aria-pressed={lang === 'vi'}
+              className={`px-3 py-1.5 font-mono text-xs font-semibold rounded-md transition-colors cursor-pointer whitespace-nowrap shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00F0FF] ${
+                lang === 'vi'
+                  ? 'bg-[#00F0FF] text-[#070A12]'
+                  : 'text-slate-300 hover:text-white'
+              }`}
+            >
+              VI
+            </button>
+            <button
+              type="button"
+              onClick={() => onChangeLang('en')}
+              aria-pressed={lang === 'en'}
+              className={`px-3 py-1.5 font-mono text-xs font-semibold rounded-md transition-colors cursor-pointer whitespace-nowrap shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00F0FF] ${
+                lang === 'en'
+                  ? 'bg-[#00F0FF] text-[#070A12]'
+                  : 'text-slate-300 hover:text-white'
+              }`}
+            >
+              EN
+            </button>
+          </div>
 
           <button
             type="button"
             onClick={() => setMobileMenuOpen((prev) => !prev)}
             aria-expanded={mobileMenuOpen}
-            aria-label={mobileMenuOpen ? 'Đóng menu' : 'Mở menu'}
-            className="md:hidden inline-flex items-center justify-center w-11 h-11 rounded-lg border border-slate-800 text-slate-200 hover:text-[#00F0FF] hover:border-slate-700 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00F0FF]"
+            aria-label={
+              mobileMenuOpen
+                ? lang === 'vi'
+                  ? 'Đóng menu'
+                  : 'Close menu'
+                : lang === 'vi'
+                  ? 'Mở menu'
+                  : 'Open menu'
+            }
+            className="lg:hidden inline-flex items-center justify-center w-11 h-11 rounded-lg border border-slate-800 text-slate-200 hover:text-[#00F0FF] hover:border-slate-700 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00F0FF]"
           >
             {mobileMenuOpen ? (
               <X className="w-5 h-5" aria-hidden="true" />
@@ -97,16 +134,17 @@ export function Header({ activeNav, onNavigate, onToggleFocusMode }: HeaderProps
         </div>
       </div>
 
-      {/* Mobile Navigation Panel */}
+      {/* Mobile & Tablet Navigation Drawer */}
       {mobileMenuOpen && (
-        <div className="md:hidden border-t border-slate-800/80 bg-[#0B0F19] px-4 py-4 space-y-1">
-          {NAV_ITEMS.map((item) => {
-            const isActive = activeNav === item.key;
+        <div className="lg:hidden border-t border-slate-800/80 bg-[#0B0F19] px-4 py-4 space-y-1">
+          {navItems.map((item) => {
+            const isActive = activeView === item.key;
             return (
               <button
                 key={item.key}
                 type="button"
-                onClick={() => handleNavClick(item)}
+                onClick={() => handleNavClick(item.key)}
+                aria-current={isActive ? 'page' : undefined}
                 className={`w-full text-left px-3 py-3 rounded-lg text-sm font-medium transition-colors cursor-pointer ${
                   isActive
                     ? 'bg-[#111827] text-[#00F0FF] border border-slate-800'
@@ -117,19 +155,6 @@ export function Header({ activeNav, onNavigate, onToggleFocusMode }: HeaderProps
               </button>
             );
           })}
-          <div className="pt-2">
-            <button
-              type="button"
-              onClick={() => {
-                setMobileMenuOpen(false);
-                onToggleFocusMode();
-              }}
-              className="w-full inline-flex items-center justify-center gap-2 px-4 py-3 text-sm font-semibold text-[#070A12] bg-[#00F0FF] hover:bg-[#33F3FF] rounded-lg transition-colors cursor-pointer"
-            >
-              <Maximize2 className="w-4 h-4" aria-hidden="true" />
-              <span>Chế độ đọc tập trung</span>
-            </button>
-          </div>
         </div>
       )}
     </header>

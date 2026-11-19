@@ -1,41 +1,75 @@
-import { useState } from 'react';
-import type { CategoryKey } from './data/blueprints';
-import { Header, type NavDestination } from './components/Header';
-import { HeroBlueprint } from './components/HeroBlueprint';
-import { FeaturedArticle } from './components/FeaturedArticle';
-import { ComingSoonGrid } from './components/ComingSoonGrid';
-import { DiscussionSection } from './components/DiscussionSection';
-import { AboutSection } from './components/AboutSection';
+import { useEffect, useState } from 'react';
+import type { CategoryId, Language, ViewRoute } from './data/blueprints';
+import { Header } from './components/Header';
+import { HomeView } from './components/HomeView';
+import { CategoryView } from './components/CategoryView';
+import { AboutView } from './components/AboutView';
 import { Footer } from './components/Footer';
 
+const LANG_STORAGE_KEY = 'horizon_blueprint_lang_v1';
+
+const VALID_VIEWS: ViewRoute[] = [
+  'home',
+  'space-quantum',
+  'ai-robotics',
+  'materials-energy',
+  'about',
+];
+
+function parseHashRoute(): ViewRoute {
+  const hash = window.location.hash.replace(/^#\/?/, '') as ViewRoute;
+  return VALID_VIEWS.includes(hash) ? hash : 'home';
+}
+
 export default function App() {
-  const [activeNav, setActiveNav] = useState<NavDestination>('home');
-  const [selectedCategory, setSelectedCategory] = useState<CategoryKey>('all');
+  const [lang, setLang] = useState<Language>(() => {
+    try {
+      const saved = localStorage.getItem(LANG_STORAGE_KEY);
+      return saved === 'en' ? 'en' : 'vi';
+    } catch {
+      return 'vi';
+    }
+  });
+
+  const [activeView, setActiveView] = useState<ViewRoute>(() => parseHashRoute());
+  const [selectedBlueprintId, setSelectedBlueprintId] = useState<
+    string | undefined
+  >(undefined);
   const [focusMode, setFocusMode] = useState(false);
 
-  const scrollToElement = (id: string) => {
-    const el = document.getElementById(id);
-    if (el) {
-      el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  useEffect(() => {
+    try {
+      localStorage.setItem(LANG_STORAGE_KEY, lang);
+    } catch {
+      // Ignore storage errors cleanly
     }
+    document.documentElement.lang = lang;
+  }, [lang]);
+
+  useEffect(() => {
+    const handleHashChange = () => {
+      const next = parseHashRoute();
+      setActiveView(next);
+      setFocusMode(false);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    };
+    window.addEventListener('hashchange', handleHashChange);
+    return () => window.removeEventListener('hashchange', handleHashChange);
+  }, []);
+
+  const navigateTo = (view: ViewRoute, blueprintId?: string) => {
+    setFocusMode(false);
+    setActiveView(view);
+    setSelectedBlueprintId(blueprintId);
+    const targetHash = `#/${view}`;
+    if (window.location.hash !== targetHash) {
+      window.history.pushState(null, '', targetHash);
+    }
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  const handleNavigate = (
-    dest: NavDestination,
-    categoryFilter?: CategoryKey
-  ) => {
-    setActiveNav(dest);
-    if (categoryFilter) {
-      setSelectedCategory(categoryFilter);
-    }
-
-    if (dest === 'home') {
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    } else if (dest === 'space-quantum' || dest === 'ai-robotics') {
-      scrollToElement('upcoming-blueprints');
-    } else if (dest === 'about') {
-      scrollToElement('about');
-    }
+  const handleOpenBlueprint = (categoryId: CategoryId, blueprintId: string) => {
+    navigateTo(categoryId, blueprintId);
   };
 
   const handleToggleFocusMode = () => {
@@ -54,43 +88,50 @@ export default function App() {
     <div className="min-h-screen bg-[#0B0F19] text-[#E2E8F0] flex flex-col">
       {!focusMode && (
         <Header
-          activeNav={activeNav}
-          onNavigate={handleNavigate}
-          onToggleFocusMode={handleToggleFocusMode}
+          lang={lang}
+          onChangeLang={setLang}
+          activeView={activeView}
+          onNavigate={(view) => navigateTo(view)}
         />
       )}
 
       <main className="flex-1">
-        {!focusMode && (
-          <HeroBlueprint
-            onReadFullBlueprint={() => scrollToElement('featured-article')}
-            onOpenFocusMode={handleToggleFocusMode}
+        {activeView === 'home' && (
+          <HomeView
+            lang={lang}
+            onSelectCategory={(cat) => navigateTo(cat)}
+            onOpenBlueprint={handleOpenBlueprint}
           />
         )}
 
-        <FeaturedArticle
-          focusMode={focusMode}
-          onToggleFocusMode={handleToggleFocusMode}
-        />
-
-        {!focusMode && (
-          <ComingSoonGrid
-            selectedCategory={selectedCategory}
-            onSelectCategory={(cat) => {
-              setSelectedCategory(cat);
-              if (cat === 'space-quantum') setActiveNav('space-quantum');
-              else if (cat === 'ai-robotics') setActiveNav('ai-robotics');
-              else setActiveNav('home');
-            }}
+        {(activeView === 'space-quantum' ||
+          activeView === 'ai-robotics' ||
+          activeView === 'materials-energy') && (
+          <CategoryView
+            categoryId={activeView}
+            lang={lang}
+            onChangeLang={setLang}
+            focusMode={focusMode}
+            onToggleFocusMode={handleToggleFocusMode}
+            onNavigateHome={() => navigateTo('home')}
+            selectedBlueprintId={selectedBlueprintId}
           />
         )}
 
-        <DiscussionSection />
-
-        {!focusMode && <AboutSection />}
+        {activeView === 'about' && (
+          <AboutView
+            lang={lang}
+            onNavigateHome={() => navigateTo('home')}
+            onOpenFeaturedBlueprint={() =>
+              navigateTo('space-quantum', 'blueprint-01')
+            }
+          />
+        )}
       </main>
 
-      {!focusMode && <Footer onNavigate={handleNavigate} />}
+      {!focusMode && (
+        <Footer lang={lang} onNavigate={(view) => navigateTo(view)} />
+      )}
     </div>
   );
 }
