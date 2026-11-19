@@ -1,0 +1,6 @@
+{
+  "name": "HORIZON BLUEPRINT",
+  "description": "HORIZON BLUEPRINT — Lưu trữ những bản thiết kế cho ngày mai. Tạp chí kiến trúc công nghệ tương lai, điện toán lượng tử quỹ đạo và robot tự trị.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
