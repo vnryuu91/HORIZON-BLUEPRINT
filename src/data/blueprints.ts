@@ -60,6 +60,7 @@ export interface BlueprintItem {
   heroImage: string;
   heroImageAlt: LocalizedText;
   heroCaption?: LocalizedText;
+  contentOrigin?: 'speculative-fiction-ai-assisted';
   metrics?: BlueprintMetric[];
   tiers?: SystemTierSpec[];
   sections?: ArticleSection[];
@@ -69,11 +70,9 @@ export interface BlueprintItem {
 export interface ArchitecturalComment {
   id: string;
   author: string;
-  role: string;
+  isAnonymous?: boolean;
   content: string;
   createdAt: string;
-  likes: number;
-  isUserCreated?: boolean;
 }
 
 export const UI_COPY = {
@@ -144,25 +143,35 @@ export const UI_COPY = {
       linkProtocolPrefix: 'Giao thức liên kết:',
     },
     discussion: {
-      kicker: 'Phản biện Kỹ thuật · Lưu trữ Trình duyệt',
-      heading: 'Thảo luận & Góp ý Kiến trúc',
-      countSuffix: 'ý kiến đóng góp',
-      authorLabel: 'Tên hoặc bí danh của bạn *',
-      authorPlaceholder: 'Ví dụ: Trần Gia Huy',
-      roleLabel: 'Chuyên môn (không bắt buộc)',
-      rolePlaceholder: 'Ví dụ: Kỹ sư Nhúng / Vật lý',
-      contentLabel: 'Đề xuất, phản biện hoặc câu hỏi về kiến trúc hệ thống *',
+      kicker: 'Đóng góp Kiến trúc · Lưu trữ Cục bộ',
+      heading: 'Đóng góp ý tưởng kiến trúc',
+      countSuffix: 'đóng góp',
+      authorLabel: 'Tên / Biệt danh kỹ sư (tùy chọn)',
+      authorPlaceholder: 'Để trống nếu muốn đăng Ẩn danh',
+      anonymousName: 'Ẩn danh',
+      contentLabel: 'Nội dung đóng góp ý tưởng (10 – 1.000 ký tự) *',
       contentPlaceholder:
-        'Chia sẻ góc nhìn của bạn về tàu mẹ máy chủ lượng tử, truyền tin laser QKD hoặc bầy robot bề mặt...',
-      validationError:
-        'Vui lòng nhập tên của bạn và nội dung góp ý kiến trúc.',
+        'Chia sẻ góc nhìn kỹ thuật của bạn về kiến trúc tàu mẹ lượng tử, mạng chuyển tiếp QKD hoặc bầy robot bề mặt...',
+      lengthError:
+        'Nội dung đóng góp cần có độ dài từ 10 đến 1.000 ký tự để đảm bảo chất lượng thảo luận kỹ thuật.',
+      moderationError:
+        'Nội dung không thể đăng tải do chứa từ khóa nhạy cảm (chính trị, tôn giáo, công kích) hoặc không phù hợp với tiêu chuẩn thảo luận khoa học của HORIZON BLUEPRINT.',
       storageNote:
-        'Bình luận được lưu tự động trong localStorage của trình duyệt.',
-      submitBtn: 'Gửi góp ý kiến trúc',
+        'Đóng góp của bạn được kiểm duyệt cục bộ và lưu trữ trên trình duyệt (localStorage).',
+      submitBtn: 'Gửi đóng góp kiến trúc',
       emptyState:
-        'Chưa có ý kiến thảo luận nào. Hãy là người đầu tiên đóng góp phản biện cho bản thiết kế này.',
-      defaultRole: 'Độc giả & Người đóng góp',
-      deleteAria: 'Xóa bình luận của bạn',
+        'Chưa có đóng góp kiến trúc nào. Hãy là người đầu tiên chia sẻ góc nhìn kỹ thuật của bạn cho bản thiết kế này.',
+      deleteAria: 'Xóa đóng góp của bạn',
+      deleteLabel: 'Xóa',
+    },
+    transparency: {
+      badgeLabel: 'Ý tưởng giả tưởng • Đồng sáng tạo bởi AI',
+      badgeTooltip:
+        'Bản thiết kế mô phỏng tương lai do con người định hướng kiến trúc và AI hỗ trợ biên tập dựa trên nguyên lý vật lý nền tảng.',
+      disclaimerTitle: 'Lưu ý minh bạch nguồn gốc nội dung',
+      disclaimerPrefix: 'Lưu ý minh bạch:',
+      disclaimerBody:
+        'Nội dung này được phát triển với sự hỗ trợ của AI dựa trên các nguyên lý khoa học chính thống, mang tính chất khoa học giả tưởng (Speculative Science) và định hướng ý tưởng tương lai — không phải công trình nghiên cứu thực nghiệm đã được kiểm chứng.',
     },
     about: {
       kicker: 'Triết Lý Hoạt Động · HORIZON BLUEPRINT',
@@ -263,25 +272,35 @@ export const UI_COPY = {
       linkProtocolPrefix: 'Link Protocol:',
     },
     discussion: {
-      kicker: 'Technical Peer Review · Browser Persisted',
-      heading: 'Architecture Discussion & Feedback',
+      kicker: 'Architecture Contributions · Local Storage',
+      heading: 'Architecture Contributions & Feedback',
       countSuffix: 'contributions',
-      authorLabel: 'Your Name or Handle *',
-      authorPlaceholder: 'e.g. Elena Vance',
-      roleLabel: 'Discipline (optional)',
-      rolePlaceholder: 'e.g. Systems Architect / Quantum Physicist',
-      contentLabel: 'Architectural critique, proposal, or question *',
+      authorLabel: 'Engineer Name / Handle (optional)',
+      authorPlaceholder: 'Leave blank to post as Anonymous',
+      anonymousName: 'Anonymous',
+      contentLabel: 'Architectural contribution (10 – 1,000 characters) *',
       contentPlaceholder:
-        'Share your thoughts on orbital quantum servers, QKD laser relays, or surface edge swarms...',
-      validationError:
-        'Please enter both your name and architectural feedback.',
+        'Share your technical perspective on the orbital quantum server, QKD relay mesh, or surface edge swarm...',
+      lengthError:
+        'Contributions must be between 10 and 1,000 characters to maintain high-signal technical discussion.',
+      moderationError:
+        'Unable to post content due to sensitive keywords (politics, religion, harassment) or violation of HORIZON BLUEPRINT\'s scientific discussion guidelines.',
       storageNote:
-        'Comments are persisted automatically in your browser localStorage.',
-      submitBtn: 'Post Feedback',
+        'Contributions are moderated client-side and saved directly in your browser (localStorage).',
+      submitBtn: 'Submit Contribution',
       emptyState:
-        'No architectural comments yet. Be the first to contribute a technical review to this blueprint.',
-      defaultRole: 'Reader & Contributor',
-      deleteAria: 'Delete your comment',
+        'No architectural contributions yet. Be the first to share your technical perspective on this blueprint.',
+      deleteAria: 'Delete your contribution',
+      deleteLabel: 'Delete',
+    },
+    transparency: {
+      badgeLabel: 'Speculative Concept • Co-created with AI',
+      badgeTooltip:
+        'A future-simulation blueprint directed by human systems architects and co-edited with AI using established physical principles.',
+      disclaimerTitle: 'Content Transparency Notice',
+      disclaimerPrefix: 'Transparency Notice:',
+      disclaimerBody:
+        'This content was co-created with AI based on established scientific principles. It represents speculative science and future architectural concepts—not a peer-reviewed or empirically verified scientific paper.',
     },
     about: {
       kicker: 'Editorial Philosophy · HORIZON BLUEPRINT',
@@ -953,26 +972,5 @@ export const BLUEPRINTS: BlueprintItem[] = [
         'Sub-threshold beam power density safe for aviation and ecosystems',
       ],
     },
-  },
-];
-
-export const INITIAL_COMMENTS: ArchitecturalComment[] = [
-  {
-    id: 'seed-1',
-    author: 'TS. Nguyễn Minh Khôi',
-    role: 'Aerospace Systems Architect',
-    content:
-      'Ý tưởng tận dụng chân không tự nhiên 10⁻¹¹ Torr trên quỹ đạo để giảm tải cho hệ thống làm lạnh cryogenic rất sắc bén. Ở tầng chuyển tiếp QKD, chúng ta nên tính thêm sai số trỏ tia (pointing jitter) khi tàu mẹ hiệu chỉnh quỹ đạo bằng động cơ ion.',
-    createdAt: '18/11/2026 · 14:20',
-    likes: 14,
-  },
-  {
-    id: 'seed-2',
-    author: 'Elena Vance',
-    role: 'Quantum Fault-Tolerance Researcher',
-    content:
-      'Decoupling the QPU from the surface edge nodes solves the launch mass bottleneck cleanly. Adding a radiation-hardened FPGA ring buffer inside Tier 2 relay satellites would preserve raw LIBS spectra during brief solar storm optical blackouts.',
-    createdAt: '18/11/2026 · 16:45',
-    likes: 11,
   },
 ];

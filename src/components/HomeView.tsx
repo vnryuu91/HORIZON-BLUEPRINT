@@ -7,6 +7,7 @@ import {
   type Language,
 } from '../data/blueprints';
 import { ResilientImage } from './ResilientImage';
+import { SpeculativeBadge } from './SpeculativeBadge';
 
 interface HomeViewProps {
   lang: Language;
@@ -211,7 +212,13 @@ export function HomeView({
             </h2>
           </div>
 
-          <article className="bg-[#111827] border border-slate-800/90 rounded-xl p-6 sm:p-8 grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+          <article
+            data-content-type={
+              latestBlueprint.contentOrigin || 'speculative-fiction-ai-assisted'
+            }
+            data-ai-coauthored="true"
+            className="bg-[#111827] border border-slate-800/90 rounded-xl p-6 sm:p-8 grid grid-cols-1 lg:grid-cols-12 gap-8 items-center"
+          >
             <div className="lg:col-span-8 space-y-4">
               <div className="flex flex-wrap items-center gap-2.5 text-xs text-slate-400">
                 <span className="font-mono font-semibold text-[#00F0FF]">
@@ -229,6 +236,7 @@ export function HomeView({
                 <span className="tabular-nums">
                   {latestBlueprint.readTime[lang]}
                 </span>
+                <SpeculativeBadge lang={lang} />
               </div>
 
               <h3 className="font-display text-xl sm:text-2xl font-bold text-slate-50 leading-snug headline-balance">

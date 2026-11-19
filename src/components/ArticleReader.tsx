@@ -7,8 +7,13 @@ import {
   type Language,
 } from '../data/blueprints';
 import { ArchitectureInspector } from './ArchitectureInspector';
+import { LayeredMeshDiagram } from './LayeredMeshDiagram';
 import { DiscussionSection } from './DiscussionSection';
 import { ResilientImage } from './ResilientImage';
+import {
+  SpeculativeBadge,
+  SpeculativeDisclaimerBox,
+} from './SpeculativeBadge';
 
 interface ArticleReaderProps {
   blueprint: BlueprintItem;
@@ -101,6 +106,10 @@ export function ArticleReader({
   return (
     <div
       id="active-blueprint-article"
+      data-content-type={
+        blueprint.contentOrigin || 'speculative-fiction-ai-assisted'
+      }
+      data-ai-coauthored="true"
       className={
         focusMode
           ? 'min-h-screen bg-[#080B13] transition-colors duration-200'
@@ -211,11 +220,14 @@ export function ArticleReader({
                     <span className="tabular-nums">
                       {blueprint.readTime[lang]}
                     </span>
+                    <SpeculativeBadge lang={lang} />
                   </div>
 
                   <h2 className="font-display text-2xl sm:text-4xl font-bold tracking-tight text-slate-50 leading-[1.16] headline-balance mb-5">
                     {blueprint.title[lang]}
                   </h2>
+
+                  <SpeculativeDisclaimerBox lang={lang} className="mb-5" />
 
                   <p className="text-base text-slate-300 leading-relaxed max-w-2xl mb-6">
                     {blueprint.summary[lang]}
@@ -290,6 +302,10 @@ export function ArticleReader({
       {/* Long-Form Reading Canvas */}
       <article
         aria-labelledby="article-main-heading"
+        data-content-type={
+          blueprint.contentOrigin || 'speculative-fiction-ai-assisted'
+        }
+        data-ai-coauthored="true"
         className={
           focusMode
             ? 'max-w-3xl mx-auto px-4 sm:px-6 py-12 sm:py-16'
@@ -410,6 +426,7 @@ export function ArticleReader({
                   <h1 className="font-display text-3xl sm:text-4xl font-bold text-slate-50 leading-tight headline-balance mb-4">
                     {blueprint.title[lang]}
                   </h1>
+                  <SpeculativeDisclaimerBox lang={lang} className="mb-5" />
                   <p className="text-base sm:text-lg text-slate-300 leading-relaxed">
                     {blueprint.summary[lang]}
                   </p>
@@ -471,6 +488,10 @@ export function ArticleReader({
                           “{section.pullQuote[lang]}”
                         </p>
                       </blockquote>
+                    )}
+
+                    {section.showArchitectureDiagram && (
+                      <LayeredMeshDiagram lang={lang} />
                     )}
 
                     {section.showArchitectureDiagram && blueprint.tiers && (

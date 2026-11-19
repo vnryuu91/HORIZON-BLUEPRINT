@@ -10,6 +10,7 @@ import {
 } from '../data/blueprints';
 import { ArticleReader } from './ArticleReader';
 import { ResilientImage } from './ResilientImage';
+import { SpeculativeBadge } from './SpeculativeBadge';
 
 const NOTIFY_STORAGE_KEY = 'horizon_blueprint_notify_v1';
 
@@ -210,6 +211,10 @@ export function CategoryView({
                 return (
                   <article
                     key={item.id}
+                    data-content-type={
+                      item.contentOrigin || 'speculative-fiction-ai-assisted'
+                    }
+                    data-ai-coauthored="true"
                     className="flex flex-col bg-[#111827] border border-slate-800/90 rounded-xl overflow-hidden"
                   >
                     <div className="relative aspect-[16/10] overflow-hidden bg-[#0D1320] border-b border-slate-800/80">
@@ -240,6 +245,7 @@ export function CategoryView({
                           <span className="font-mono">
                             {item.publishedDate[lang]}
                           </span>
+                          <SpeculativeBadge lang={lang} />
                         </div>
 
                         <h3 className="font-display text-xl font-bold text-slate-50 leading-snug mb-3 headline-balance">

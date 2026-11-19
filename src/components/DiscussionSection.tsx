@@ -1,13 +1,23 @@
 import { useEffect, useState, type FormEvent } from 'react';
-import { MessageSquarePlus, ThumbsUp, Trash2 } from 'lucide-react';
 import {
-  INITIAL_COMMENTS,
+  AlertTriangle,
+  MessageSquarePlus,
+  Orbit,
+  ShieldCheck,
+  Trash2,
+} from 'lucide-react';
+import {
   UI_COPY,
   type ArchitecturalComment,
   type Language,
 } from '../data/blueprints';
+import {
+  MAX_CONTRIBUTION_LENGTH,
+  MIN_CONTRIBUTION_LENGTH,
+  moderateContribution,
+} from '../utils/moderation';
 
-const STORAGE_KEY = 'aether_lab_comments_v1';
+const STORAGE_KEY = 'horizon_blueprint_contributions_v1';
 
 function formatTimestamp(date: Date): string {
   const pad = (n: number) => String(n).padStart(2, '0');
@@ -26,6 +36,7 @@ interface DiscussionSectionProps {
 export function DiscussionSection({ lang }: DiscussionSectionProps) {
   const t = UI_COPY[lang].discussion;
 
+  // Load strictly real user contributions from localStorage (zero hardcoded mock data)
   const [comments, setComments] = useState<ArchitecturalComment[]>(() => {
     try {
       const saved = localStorage.getItem(STORAGE_KEY);
@@ -36,16 +47,16 @@ export function DiscussionSection({ lang }: DiscussionSectionProps) {
         }
       }
     } catch {
-      // Fallback to initial seeded comments if storage is unavailable
+      // Fallback cleanly to empty list if localStorage is unavailable
     }
-    return INITIAL_COMMENTS;
+    return [];
   });
 
   const [author, setAuthor] = useState('');
-  const [role, setRole] = useState('');
   const [content, setContent] = useState('');
-  const [errorMsg, setErrorMsg] = useState('');
-  const [likedIds, setLikedIds] = useState<Record<string, boolean>>({});
+  const [errorReason, setErrorReason] = useState<
+    null | 'too_short' | 'too_long' | 'sensitive_or_unsafe'
+  >(null);
 
   useEffect(() => {
     try {
@@ -55,48 +66,45 @@ export function DiscussionSection({ lang }: DiscussionSectionProps) {
     }
   }, [comments]);
 
+  const trimmedLength = content.trim().length;
+
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
     const trimmedAuthor = author.trim();
     const trimmedContent = content.trim();
 
-    if (!trimmedAuthor || !trimmedContent) {
-      setErrorMsg(t.validationError);
+    const moderation = moderateContribution(trimmedAuthor, trimmedContent);
+    if (!moderation.ok) {
+      setErrorReason(moderation.reason);
       return;
     }
 
-    setErrorMsg('');
-    const newComment: ArchitecturalComment = {
-      id: `comment-${Date.now()}`,
-      author: trimmedAuthor,
-      role: role.trim() || t.defaultRole,
+    setErrorReason(null);
+    const isAnonymous = trimmedAuthor.length === 0;
+
+    const newContribution: ArchitecturalComment = {
+      id: `contrib-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+      author: isAnonymous ? '' : trimmedAuthor,
+      isAnonymous,
       content: trimmedContent,
       createdAt: formatTimestamp(new Date()),
-      likes: 0,
-      isUserCreated: true,
     };
 
-    setComments((prev) => [newComment, ...prev]);
+    setComments((prev) => [newContribution, ...prev]);
     setAuthor('');
-    setRole('');
     setContent('');
-  };
-
-  const handleToggleLike = (id: string) => {
-    const alreadyLiked = Boolean(likedIds[id]);
-    setLikedIds((prev) => ({ ...prev, [id]: !alreadyLiked }));
-    setComments((prev) =>
-      prev.map((item) =>
-        item.id === id
-          ? { ...item, likes: Math.max(0, item.likes + (alreadyLiked ? -1 : 1)) }
-          : item
-      )
-    );
   };
 
   const handleDelete = (id: string) => {
     setComments((prev) => prev.filter((item) => item.id !== id));
   };
+
+  const errorMessage =
+    errorReason === 'sensitive_or_unsafe'
+      ? t.moderationError
+      : errorReason === 'too_short' || errorReason === 'too_long'
+        ? t.lengthError
+        : null;
 
   return (
     <section
@@ -123,69 +131,85 @@ export function DiscussionSection({ lang }: DiscussionSectionProps) {
         {/* Submission Form */}
         <form
           onSubmit={handleSubmit}
+          noValidate
           className="bg-[#111827] border border-slate-800 rounded-xl p-5 sm:p-6 mb-10 space-y-4"
         >
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <label
-                htmlFor="comment-author"
-                className="block text-xs font-medium text-slate-300 mb-1.5"
-              >
-                {t.authorLabel}
-              </label>
-              <input
-                id="comment-author"
-                type="text"
-                value={author}
-                onChange={(e) => setAuthor(e.target.value)}
-                placeholder={t.authorPlaceholder}
-                className="w-full px-3.5 py-2.5 text-sm text-slate-100 placeholder-slate-500 bg-[#0B0F19] border border-slate-800 focus:border-[#00F0FF] focus:outline-none rounded-lg transition-colors"
-              />
-            </div>
-
-            <div>
-              <label
-                htmlFor="comment-role"
-                className="block text-xs font-medium text-slate-300 mb-1.5"
-              >
-                {t.roleLabel}
-              </label>
-              <input
-                id="comment-role"
-                type="text"
-                value={role}
-                onChange={(e) => setRole(e.target.value)}
-                placeholder={t.rolePlaceholder}
-                className="w-full px-3.5 py-2.5 text-sm text-slate-100 placeholder-slate-500 bg-[#0B0F19] border border-slate-800 focus:border-[#00F0FF] focus:outline-none rounded-lg transition-colors"
-              />
-            </div>
+          <div>
+            <label
+              htmlFor="comment-author"
+              className="block text-xs font-medium text-slate-300 mb-1.5"
+            >
+              {t.authorLabel}
+            </label>
+            <input
+              id="comment-author"
+              type="text"
+              maxLength={80}
+              value={author}
+              onChange={(e) => {
+                setAuthor(e.target.value);
+                if (errorReason) setErrorReason(null);
+              }}
+              placeholder={t.authorPlaceholder}
+              className="w-full px-3.5 py-2.5 text-sm text-slate-100 placeholder-slate-500 bg-[#0B0F19] border border-slate-800 focus:border-[#00F0FF] focus:outline-none rounded-lg transition-colors"
+            />
           </div>
 
           <div>
-            <label
-              htmlFor="comment-content"
-              className="block text-xs font-medium text-slate-300 mb-1.5"
-            >
-              {t.contentLabel}
-            </label>
+            <div className="flex items-center justify-between gap-2 mb-1.5">
+              <label
+                htmlFor="comment-content"
+                className="block text-xs font-medium text-slate-300"
+              >
+                {t.contentLabel}
+              </label>
+              <span
+                className={`font-mono text-xs tabular-nums ${
+                  trimmedLength > MAX_CONTRIBUTION_LENGTH
+                    ? 'text-amber-400'
+                    : trimmedLength >= MIN_CONTRIBUTION_LENGTH
+                      ? 'text-[#00F0FF]'
+                      : 'text-slate-500'
+                }`}
+              >
+                {trimmedLength} / {MAX_CONTRIBUTION_LENGTH}
+              </span>
+            </div>
             <textarea
               id="comment-content"
               rows={4}
               value={content}
-              onChange={(e) => setContent(e.target.value)}
+              onChange={(e) => {
+                setContent(e.target.value);
+                if (errorReason) setErrorReason(null);
+              }}
               placeholder={t.contentPlaceholder}
               className="w-full px-3.5 py-2.5 text-sm text-slate-100 placeholder-slate-500 bg-[#0B0F19] border border-slate-800 focus:border-[#00F0FF] focus:outline-none rounded-lg transition-colors resize-y"
             />
           </div>
 
-          {errorMsg && (
-            <p role="alert" className="text-xs text-amber-400">
-              {errorMsg}
-            </p>
+          {/* Bilingual Moderation / Length Warning */}
+          {errorMessage && (
+            <div
+              role="alert"
+              className="flex items-start gap-2.5 p-3.5 rounded-lg bg-amber-950/35 border border-amber-500/40 text-amber-200 text-xs sm:text-sm leading-relaxed"
+            >
+              <AlertTriangle
+                className="w-4 h-4 text-amber-400 shrink-0 mt-0.5"
+                aria-hidden="true"
+              />
+              <span>{errorMessage}</span>
+            </div>
           )}
 
           <div className="flex flex-wrap items-center justify-between gap-3 pt-1">
-            <span className="text-xs text-slate-400">{t.storageNote}</span>
+            <div className="inline-flex items-center gap-2 text-xs text-slate-400">
+              <ShieldCheck
+                className="w-4 h-4 text-[#00F0FF] shrink-0"
+                aria-hidden="true"
+              />
+              <span>{t.storageNote}</span>
+            </div>
             <button
               type="submit"
               className="inline-flex items-center gap-2 px-5 py-2.5 text-xs sm:text-sm font-semibold text-[#070A12] bg-[#00F0FF] hover:bg-[#33F3FF] rounded-lg transition-colors whitespace-nowrap shrink-0 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00F0FF]"
@@ -196,63 +220,57 @@ export function DiscussionSection({ lang }: DiscussionSectionProps) {
           </div>
         </form>
 
-        {/* Comments List */}
+        {/* Empty State vs. Real User Contributions */}
         {comments.length === 0 ? (
-          <div className="bg-[#111827]/60 border border-slate-800 rounded-xl p-8 text-center">
-            <p className="text-sm text-slate-400">{t.emptyState}</p>
+          <div className="relative bg-[#0D1322] border border-slate-800/90 rounded-xl p-8 sm:p-10 text-center overflow-hidden">
+            <div
+              aria-hidden="true"
+              className="w-10 h-10 mx-auto mb-4 rounded-lg bg-[#111827] border border-slate-800 flex items-center justify-center"
+            >
+              <Orbit className="w-5 h-5 text-[#00F0FF]/80" />
+            </div>
+            <p className="text-sm sm:text-base text-slate-300 leading-relaxed max-w-md mx-auto">
+              {t.emptyState}
+            </p>
           </div>
         ) : (
           <div className="space-y-4">
             {comments.map((comment) => {
-              const isLiked = Boolean(likedIds[comment.id]);
+              const displayName =
+                comment.isAnonymous || !comment.author
+                  ? t.anonymousName
+                  : comment.author;
+
               return (
                 <article
                   key={comment.id}
-                  className="bg-[#111827]/75 border border-slate-800/90 rounded-xl p-5 sm:p-6"
+                  className="bg-[#111827]/80 border border-slate-800/90 rounded-xl p-5 sm:p-6"
                 >
-                  <div className="flex flex-wrap items-start justify-between gap-3 mb-3">
-                    <div>
+                  <div className="flex flex-wrap items-center justify-between gap-3 mb-3 pb-3 border-b border-slate-800/70">
+                    <div className="flex flex-wrap items-center gap-2.5">
                       <h3 className="text-sm font-semibold text-slate-100">
-                        {comment.author}
+                        {displayName}
                       </h3>
-                      <div className="flex flex-wrap items-center gap-2 text-xs text-slate-400 mt-0.5">
-                        <span>{comment.role}</span>
-                        <span aria-hidden="true">·</span>
-                        <time className="font-mono tabular-nums">
-                          {comment.createdAt}
-                        </time>
-                      </div>
+                      <span aria-hidden="true" className="text-slate-600">
+                        ·
+                      </span>
+                      <time className="font-mono text-xs text-slate-400 tabular-nums">
+                        {comment.createdAt}
+                      </time>
                     </div>
 
-                    <div className="flex items-center gap-2">
-                      <button
-                        type="button"
-                        onClick={() => handleToggleLike(comment.id)}
-                        aria-pressed={isLiked}
-                        className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-mono rounded-lg border transition-colors cursor-pointer tabular-nums ${
-                          isLiked
-                            ? 'bg-[#00F0FF]/15 text-[#00F0FF] border-[#00F0FF]/50'
-                            : 'bg-[#0B0F19] text-slate-400 border-slate-800 hover:text-slate-200'
-                        }`}
-                      >
-                        <ThumbsUp className="w-3.5 h-3.5" aria-hidden="true" />
-                        <span>{comment.likes}</span>
-                      </button>
-
-                      {comment.isUserCreated && (
-                        <button
-                          type="button"
-                          onClick={() => handleDelete(comment.id)}
-                          aria-label={t.deleteAria}
-                          className="p-1.5 text-slate-500 hover:text-rose-400 rounded-lg border border-transparent hover:border-slate-800 transition-colors cursor-pointer"
-                        >
-                          <Trash2 className="w-3.5 h-3.5" aria-hidden="true" />
-                        </button>
-                      )}
-                    </div>
+                    <button
+                      type="button"
+                      onClick={() => handleDelete(comment.id)}
+                      aria-label={t.deleteAria}
+                      className="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs text-slate-400 hover:text-rose-300 bg-[#0B0F19] border border-slate-800 hover:border-rose-500/40 rounded-lg transition-colors cursor-pointer"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" aria-hidden="true" />
+                      <span>{t.deleteLabel}</span>
+                    </button>
                   </div>
 
-                  <p className="text-sm sm:text-[0.9375rem] text-slate-200 leading-relaxed whitespace-pre-line">
+                  <p className="text-sm sm:text-[0.9375rem] text-slate-200 leading-relaxed whitespace-pre-line break-words">
                     {comment.content}
                   </p>
                 </article>
