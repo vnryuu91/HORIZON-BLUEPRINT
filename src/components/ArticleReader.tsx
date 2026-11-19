@@ -14,6 +14,7 @@ import {
   SpeculativeBadge,
   SpeculativeDisclaimerBox,
 } from './SpeculativeBadge';
+import { SocialShareBar } from './SocialShareBar';
 
 interface ArticleReaderProps {
   blueprint: BlueprintItem;
@@ -243,6 +244,13 @@ export function ArticleReader({
                     <Maximize2 className="w-4 h-4" aria-hidden="true" />
                     <span>{t.article.focusEnter}</span>
                   </button>
+
+                  <SocialShareBar
+                    lang={lang}
+                    title={blueprint.title[lang]}
+                    summary={blueprint.summary[lang]}
+                    variant="inline"
+                  />
                 </div>
               </div>
 
@@ -518,6 +526,13 @@ export function ArticleReader({
                   </section>
                 ))}
               </div>
+
+              <SocialShareBar
+                lang={lang}
+                title={blueprint.title[lang]}
+                summary={blueprint.summary[lang]}
+                variant="banner"
+              />
             </div>
           </div>
         </div>

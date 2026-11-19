@@ -173,6 +173,16 @@ export const UI_COPY = {
       disclaimerBody:
         'Nội dung này được phát triển với sự hỗ trợ của AI dựa trên các nguyên lý khoa học chính thống, mang tính chất khoa học giả tưởng (Speculative Science) và định hướng ý tưởng tương lai — không phải công trình nghiên cứu thực nghiệm đã được kiểm chứng.',
     },
+    share: {
+      heading: 'Chia sẻ bản thiết kế:',
+      shareOnX: 'Chia sẻ lên X (Twitter)',
+      shareOnFacebook: 'Chia sẻ lên Facebook',
+      shareOnLinkedIn: 'Chia sẻ lên LinkedIn',
+      shareOnTelegram: 'Chia sẻ lên Telegram',
+      copyLink: 'Sao chép liên kết',
+      copiedToast: 'Đã sao chép liên kết!',
+      moreShare: 'Chia sẻ khác',
+    },
     about: {
       kicker: 'Triết Lý Hoạt Động · HORIZON BLUEPRINT',
       heading: 'Kết Nối Tư Duy Kỹ Thuật Thực Tế Với Tầm Nhìn 20–50 Năm Tới',
@@ -301,6 +311,16 @@ export const UI_COPY = {
       disclaimerPrefix: 'Transparency Notice:',
       disclaimerBody:
         'This content was co-created with AI based on established scientific principles. It represents speculative science and future architectural concepts—not a peer-reviewed or empirically verified scientific paper.',
+    },
+    share: {
+      heading: 'Share Blueprint:',
+      shareOnX: 'Share on X (Twitter)',
+      shareOnFacebook: 'Share on Facebook',
+      shareOnLinkedIn: 'Share on LinkedIn',
+      shareOnTelegram: 'Share on Telegram',
+      copyLink: 'Copy link',
+      copiedToast: 'Link copied!',
+      moreShare: 'More',
     },
     about: {
       kicker: 'Editorial Philosophy · HORIZON BLUEPRINT',
