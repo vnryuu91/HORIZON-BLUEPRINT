@@ -2,18 +2,13 @@ import {
   CATEGORY_SEO_META,
   SITE_SEO_META,
   findBlueprintSeoBySlugOrId,
-  type Language,
-} from '../src/data/blueprintMeta';
-
-export const config = {
-  runtime: 'edge',
-};
+} from './_catalog.js';
 
 const SOCIAL_BOT_REGEX =
   /facebookexternalhit|facebot|zalo|twitterbot|telegrambot|linkedinbot|discordbot|slackbot|whatsapp|pinterest|googlebot|bingbot|applebot/i;
 
-function escapeHtml(value: string): string {
-  return value
+function escapeHtml(value) {
+  return String(value)
     .replaceAll('&', '&amp;')
     .replaceAll('<', '&lt;')
     .replaceAll('>', '&gt;')
@@ -21,29 +16,38 @@ function escapeHtml(value: string): string {
     .replaceAll("'", '&#39;');
 }
 
-function resolveOrigin(req: Request): string {
-  const url = new URL(req.url);
-  const forwardedProto = req.headers.get('x-forwarded-proto');
-  const forwardedHost = req.headers.get('x-forwarded-host');
-  const host = forwardedHost || req.headers.get('host') || url.host;
-  const proto = forwardedProto || url.protocol.replace(':', '') || 'https';
+function getHeader(headers, key) {
+  if (!headers) return '';
+  if (typeof headers.get === 'function') {
+    return headers.get(key) || '';
+  }
+  const value = headers[key] ?? headers[key.toLowerCase()];
+  if (Array.isArray(value)) return value[0] || '';
+  return value ? String(value) : '';
+}
+
+function resolveOrigin(req) {
+  const forwardedProto = getHeader(req.headers, 'x-forwarded-proto');
+  const forwardedHost = getHeader(req.headers, 'x-forwarded-host');
+  const host =
+    forwardedHost || getHeader(req.headers, 'host') || 'horizon-blueprint.vercel.app';
+  const proto = forwardedProto || (host.includes('localhost') ? 'http' : 'https');
   return `${proto}://${host}`;
 }
 
-export default async function handler(req: Request): Promise<Response> {
-  const url = new URL(req.url);
+export default function handler(req, res) {
   const origin = resolveOrigin(req);
-  const userAgent = req.headers.get('user-agent') || '';
+  const url = new URL(req.url || '/', origin);
+  const userAgent = getHeader(req.headers, 'user-agent');
   const isBot = SOCIAL_BOT_REGEX.test(userAgent);
 
   const postSlug = url.searchParams.get('post') || url.searchParams.get('slug');
-  const langParam = url.searchParams.get('lang');
-  const lang: Language = langParam === 'en' ? 'en' : 'vi';
+  const lang = url.searchParams.get('lang') === 'en' ? 'en' : 'vi';
 
   const blueprint = findBlueprintSeoBySlugOrId(postSlug);
-  const category = blueprint
-    ? CATEGORY_SEO_META.find((c) => c.id === blueprint.category)
-    : undefined;
+  const categoryName = blueprint
+    ? CATEGORY_SEO_META[blueprint.category]?.[lang] || blueprint.category
+    : '';
 
   const pageTitle = blueprint
     ? `${blueprint.title[lang]} — ${SITE_SEO_META.siteName}`
@@ -84,7 +88,7 @@ export default async function handler(req: Request): Promise<Response> {
           '@type': 'Organization',
           name: SITE_SEO_META.siteName,
         },
-        articleSection: category?.name[lang] || blueprint.category,
+        articleSection: categoryName,
         url: targetUrl,
         inLanguage: lang,
       }
@@ -97,7 +101,6 @@ export default async function handler(req: Request): Promise<Response> {
         inLanguage: ['vi', 'en'],
       };
 
-  // Only emit auto-redirect tags for real human browsers; bots read the meta tags directly
   const humanRedirectBlock = isBot
     ? ''
     : `
@@ -120,6 +123,7 @@ export default async function handler(req: Request): Promise<Response> {
     <meta property="og:description" content="${escapeHtml(pageDescription)}" />
     <meta property="og:url" content="${escapeHtml(targetUrl)}" />
     <meta property="og:image" content="${escapeHtml(ogImageUrl)}" />
+    <meta property="og:image:type" content="image/svg+xml" />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
     <meta property="og:image:alt" content="${escapeHtml(ogImageAlt)}" />
@@ -146,12 +150,12 @@ export default async function handler(req: Request): Promise<Response> {
   </body>
 </html>`;
 
-  return new Response(html, {
-    status: 200,
-    headers: {
-      'Content-Type': 'text/html; charset=utf-8',
-      'Cache-Control': 'public, max-age=120, s-maxage=3600, stale-while-revalidate=86400',
-      Vary: 'User-Agent',
-    },
-  });
+  res.statusCode = 200;
+  res.setHeader('Content-Type', 'text/html; charset=utf-8');
+  res.setHeader(
+    'Cache-Control',
+    'public, max-age=120, s-maxage=3600, stale-while-revalidate=86400'
+  );
+  res.setHeader('Vary', 'User-Agent');
+  res.end(html);
 }

@@ -17,7 +17,7 @@
           "key": "post"
         }
       ],
-      "destination": "/api/share"
+      "destination": "/api/share.js"
     },
     {
       "source": "/",
@@ -28,7 +28,7 @@
           "value": ".*(facebookexternalhit|Facebot|Zalo|Twitterbot|TelegramBot|LinkedInBot|Discordbot|Slackbot|WhatsApp|Pinterest|Googlebot|bingbot|Applebot).*"
         }
       ],
-      "destination": "/api/share"
+      "destination": "/api/share.js"
     },
     {
       "source": "/post/:slug",
@@ -39,7 +39,7 @@
           "value": ".*(facebookexternalhit|Facebot|Zalo|Twitterbot|TelegramBot|LinkedInBot|Discordbot|Slackbot|WhatsApp|Pinterest|Googlebot|bingbot|Applebot).*"
         }
       ],
-      "destination": "/api/share?post=:slug"
+      "destination": "/api/share.js?post=:slug"
     },
     {
       "source": "/post/:slug",
