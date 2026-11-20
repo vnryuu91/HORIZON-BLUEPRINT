@@ -1,0 +1,103 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" width="1200" height="630" role="img" aria-label="HORIZON BLUEPRINT — Lưu trữ những bản thiết kế kiến trúc cho kỷ nguyên tiếp theo">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#070A12" />
+      <stop offset="55%" stop-color="#0B0F19" />
+      <stop offset="100%" stop-color="#0D1326" />
+    </linearGradient>
+    <radialGradient id="cyanGlow" cx="78%" cy="32%" r="48%">
+      <stop offset="0%" stop-color="#00F0FF" stop-opacity="0.18" />
+      <stop offset="55%" stop-color="#00F0FF" stop-opacity="0.04" />
+      <stop offset="100%" stop-color="#00F0FF" stop-opacity="0" />
+    </radialGradient>
+    <radialGradient id="violetGlow" cx="20%" cy="82%" r="50%">
+      <stop offset="0%" stop-color="#7000FF" stop-opacity="0.22" />
+      <stop offset="60%" stop-color="#7000FF" stop-opacity="0.05" />
+      <stop offset="100%" stop-color="#7000FF" stop-opacity="0" />
+    </radialGradient>
+    <pattern id="minorGrid" width="30" height="30" patternUnits="userSpaceOnUse">
+      <path d="M 30 0 L 0 0 0 30" fill="none" stroke="#00F0FF" stroke-opacity="0.06" stroke-width="0.75" />
+    </pattern>
+    <pattern id="majorGrid" width="120" height="120" patternUnits="userSpaceOnUse">
+      <rect width="120" height="120" fill="url(#minorGrid)" />
+      <path d="M 120 0 L 0 0 0 120" fill="none" stroke="#00F0FF" stroke-opacity="0.15" stroke-width="1" />
+    </pattern>
+    <linearGradient id="beamGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#00F0FF" stop-opacity="0" />
+      <stop offset="50%" stop-color="#00F0FF" stop-opacity="0.9" />
+      <stop offset="100%" stop-color="#7000FF" stop-opacity="0.8" />
+    </linearGradient>
+  </defs>
+
+  <!-- Deep Space Canvas -->
+  <rect width="1200" height="630" fill="url(#bgGrad)" />
+  <rect width="1200" height="630" fill="url(#majorGrid)" />
+  <rect width="1200" height="630" fill="url(#cyanGlow)" />
+  <rect width="1200" height="630" fill="url(#violetGlow)" />
+
+  <!-- Blueprint Frame & Corner Crosshairs -->
+  <rect x="28" y="28" width="1144" height="574" rx="14" fill="none" stroke="#1E293B" stroke-width="1.5" />
+  <rect x="38" y="38" width="1124" height="554" rx="10" fill="none" stroke="#00F0FF" stroke-opacity="0.22" stroke-width="1" stroke-dasharray="6 6" />
+
+  <!-- Corner Brackets -->
+  <path d="M28 64 V28 H64 M1136 28 H1172 V64 M28 566 V602 H64 M1136 602 H1172 V566" fill="none" stroke="#00F0FF" stroke-width="2.5" stroke-linecap="round" />
+
+  <!-- Sci-Fi Orbital Wireframe Schematic on Right -->
+  <g transform="translate(915, 295)" opacity="0.9">
+    <circle cx="0" cy="0" r="190" fill="none" stroke="#00F0FF" stroke-opacity="0.16" stroke-width="1.2" stroke-dasharray="4 6" />
+    <circle cx="0" cy="0" r="142" fill="none" stroke="#7000FF" stroke-opacity="0.35" stroke-width="1.5" />
+    <ellipse cx="0" cy="0" rx="220" ry="74" transform="rotate(-18)" fill="none" stroke="#00F0FF" stroke-opacity="0.35" stroke-width="1.4" />
+    <ellipse cx="0" cy="0" rx="220" ry="74" transform="rotate(24)" fill="none" stroke="#00F0FF" stroke-opacity="0.2" stroke-width="1" stroke-dasharray="5 5" />
+
+    <!-- Quantum Core Hexagon -->
+    <polygon points="0,-54 47,-27 47,27 0,54 -47,27 -47,-27" fill="#0B0F19" fill-opacity="0.85" stroke="#00F0FF" stroke-width="2" />
+    <polygon points="0,-32 28,-16 28,16 0,32 -28,16 -28,-16" fill="#7000FF" fill-opacity="0.28" stroke="#00F0FF" stroke-opacity="0.7" stroke-width="1.2" />
+    <circle cx="0" cy="0" r="10" fill="#00F0FF" />
+
+    <!-- Satellite Nodes -->
+    <circle cx="-138" cy="-44" r="7" fill="#0B0F19" stroke="#00F0FF" stroke-width="2" />
+    <circle cx="144" cy="48" r="7" fill="#0B0F19" stroke="#00F0FF" stroke-width="2" />
+    <circle cx="96" cy="-108" r="5" fill="#7000FF" stroke="#00F0FF" stroke-width="1.5" />
+    <line x1="-47" y1="-16" x2="-131" y2="-42" stroke="#00F0FF" stroke-opacity="0.55" stroke-width="1.5" stroke-dasharray="4 4" />
+    <line x1="47" y1="16" x2="137" y2="46" stroke="#00F0FF" stroke-opacity="0.55" stroke-width="1.5" stroke-dasharray="4 4" />
+  </g>
+
+  <!-- Top Telemetry Header -->
+  <g transform="translate(76, 86)">
+    <rect x="0" y="0" width="12" height="12" rx="2" fill="#00F0FF" />
+    <text x="24" y="11" fill="#00F0FF" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace" font-size="15" font-weight="600" letter-spacing="2.5">
+      ARCHITECTURE DOSSIER · SPECULATIVE SCIENCE
+    </text>
+    <text x="900" y="11" fill="#64748B" font-family="'JetBrains Mono', ui-monospace, monospace" font-size="14" letter-spacing="1.5">
+      GRID // 1200×630
+    </text>
+  </g>
+
+  <!-- Divider Beam -->
+  <rect x="76" y="118" width="660" height="2" fill="url(#beamGrad)" opacity="0.7" />
+
+  <!-- Brand Wordmark -->
+  <text x="76" y="218" fill="#F8FAFC" font-family="'Outfit', 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif" font-size="68" font-weight="700" letter-spacing="2">
+    HORIZON
+  </text>
+  <text x="76" y="294" fill="#00F0FF" font-family="'Outfit', 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif" font-size="68" font-weight="700" letter-spacing="2">
+    BLUEPRINT
+  </text>
+
+  <!-- Bilingual Slogan & Description -->
+  <text x="76" y="362" fill="#E2E8F0" font-family="'Plus Jakarta Sans', system-ui, -apple-system, sans-serif" font-size="25" font-weight="600">
+    Lưu trữ những bản thiết kế kiến trúc cho kỷ nguyên tiếp theo
+  </text>
+  <text x="76" y="402" fill="#94A3B8" font-family="'Plus Jakarta Sans', system-ui, -apple-system, sans-serif" font-size="19" font-weight="400">
+    Vũ trụ &amp; Lượng tử  ·  AI &amp; Robot  ·  Vật liệu &amp; Năng lượng
+  </text>
+
+  <!-- Bottom Coordinate Bar -->
+  <line x1="76" y1="510" x2="1124" y2="510" stroke="#1E293B" stroke-width="1.5" />
+  <text x="76" y="552" fill="#94A3B8" font-family="'JetBrains Mono', ui-monospace, monospace" font-size="15" letter-spacing="1.2">
+    ARCHIVE_ID: HB-2026  //  FIRST-PRINCIPLES SYSTEMS DESIGN
+  </text>
+  <text x="1124" y="552" text-anchor="end" fill="#00F0FF" font-family="'JetBrains Mono', ui-monospace, monospace" font-size="15" font-weight="600" letter-spacing="1.5">
+    VI / EN BILINGUAL
+  </text>
+</svg>

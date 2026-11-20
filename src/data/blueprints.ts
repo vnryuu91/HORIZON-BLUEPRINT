@@ -1,11 +1,11 @@
-export type Language = 'vi' | 'en';
-export type CategoryId = 'space-quantum' | 'ai-robotics' | 'materials-energy';
-export type ViewRoute = 'home' | CategoryId | 'about';
+import type {
+  CategoryId,
+  Language,
+  LocalizedText,
+  ViewRoute,
+} from './blueprintMeta';
 
-export interface LocalizedText {
-  vi: string;
-  en: string;
-}
+export type { CategoryId, Language, LocalizedText, ViewRoute };
 
 export interface CategoryMeta {
   id: CategoryId;
@@ -49,6 +49,7 @@ export interface BlueprintMetric {
 
 export interface BlueprintItem {
   id: string;
+  slug: string;
   issueNumber: string;
   category: CategoryId;
   status: 'published' | 'in-progress';
@@ -425,6 +426,7 @@ export const CATEGORIES: CategoryMeta[] = [
 export const BLUEPRINTS: BlueprintItem[] = [
   {
     id: 'blueprint-01',
+    slug: 'quantum-fleet-architecture',
     issueNumber: '01',
     category: 'space-quantum',
     status: 'published',
@@ -780,6 +782,7 @@ export const BLUEPRINTS: BlueprintItem[] = [
   },
   {
     id: 'blueprint-02',
+    slug: 'photonic-propulsion-light-sail',
     issueNumber: '02',
     category: 'space-quantum',
     status: 'in-progress',
@@ -823,6 +826,7 @@ export const BLUEPRINTS: BlueprintItem[] = [
   },
   {
     id: 'blueprint-03',
+    slug: 'lunar-regolith-robot-swarm',
     issueNumber: '03',
     category: 'ai-robotics',
     status: 'in-progress',
@@ -866,6 +870,7 @@ export const BLUEPRINTS: BlueprintItem[] = [
   },
   {
     id: 'blueprint-04',
+    slug: 'orbital-foundry-consensus',
     issueNumber: '04',
     category: 'ai-robotics',
     status: 'in-progress',
@@ -909,6 +914,7 @@ export const BLUEPRINTS: BlueprintItem[] = [
   },
   {
     id: 'blueprint-05',
+    slug: 'liquid-lithium-fusion-blanket',
     issueNumber: '05',
     category: 'materials-energy',
     status: 'in-progress',
@@ -952,6 +958,7 @@ export const BLUEPRINTS: BlueprintItem[] = [
   },
   {
     id: 'blueprint-06',
+    slug: 'orbital-solar-microwave-grid',
     issueNumber: '06',
     category: 'materials-energy',
     status: 'in-progress',
@@ -994,3 +1001,15 @@ export const BLUEPRINTS: BlueprintItem[] = [
     },
   },
 ];
+
+export function findBlueprintBySlugOrId(
+  slugOrId: string | null | undefined
+): BlueprintItem | undefined {
+  if (!slugOrId) return undefined;
+  const normalized = slugOrId.trim().toLowerCase();
+  return BLUEPRINTS.find(
+    (b) =>
+      b.slug.toLowerCase() === normalized || b.id.toLowerCase() === normalized
+  );
+}
+

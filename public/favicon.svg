@@ -1,0 +1,51 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100" role="img" aria-label="HORIZON BLUEPRINT">
+  <defs>
+    <linearGradient id="hb-core-grad" x1="15%" y1="15%" x2="85%" y2="85%">
+      <stop offset="0%" stop-color="#7000FF" />
+      <stop offset="100%" stop-color="#00F0FF" />
+    </linearGradient>
+    <linearGradient id="hb-orbit-grad" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#00F0FF" />
+      <stop offset="50%" stop-color="#7000FF" />
+      <stop offset="100%" stop-color="#00F0FF" />
+    </linearGradient>
+  </defs>
+
+  <!-- Rounded Dark Space Backing for crisp 16x16 visibility on both light & dark browser tabs -->
+  <rect width="100" height="100" rx="22" fill="#0B0F19" />
+
+  <!-- 1. Central Planetary / Quantum Core Circle -->
+  <circle
+    cx="50"
+    cy="45"
+    r="22"
+    fill="none"
+    stroke="url(#hb-core-grad)"
+    stroke-width="6"
+  />
+
+  <!-- 2. 45-degree Tilted Elliptical Orbit -->
+  <ellipse
+    cx="50"
+    cy="45"
+    rx="40"
+    ry="14.5"
+    transform="rotate(-45 50 45)"
+    fill="none"
+    stroke="url(#hb-orbit-grad)"
+    stroke-width="5.5"
+    stroke-linecap="round"
+  />
+
+  <!-- 3. Sharp 4-Point Quantum Spark at Core Center -->
+  <path
+    d="M50 31 L54 41 L64 45 L54 49 L50 59 L46 49 L36 45 L46 41 Z"
+    fill="#00F0FF"
+  />
+
+  <!-- 4. Tapered Horizon Arc across the Bottom -->
+  <path
+    d="M11 82 Q50 65 89 82 Q50 74 11 82 Z"
+    fill="#00F0FF"
+  />
+</svg>

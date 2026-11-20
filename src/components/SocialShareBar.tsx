@@ -6,13 +6,26 @@ interface SocialShareBarProps {
   lang: Language;
   title: string;
   summary?: string;
+  slug?: string;
   variant?: 'inline' | 'banner';
+}
+
+function buildCanonicalShareUrl(slug: string | undefined, lang: Language): string {
+  if (typeof window === 'undefined') return '';
+  if (!slug) return window.location.href;
+  const url = new URL(window.location.origin + '/');
+  url.searchParams.set('post', slug);
+  if (lang === 'en') {
+    url.searchParams.set('lang', 'en');
+  }
+  return url.toString();
 }
 
 export function SocialShareBar({
   lang,
   title,
   summary = '',
+  slug,
   variant = 'inline',
 }: SocialShareBarProps) {
   const [copied, setCopied] = useState(false);
@@ -22,11 +35,11 @@ export function SocialShareBar({
   const t = UI_COPY[lang].share;
 
   useEffect(() => {
-    setShareUrl(window.location.href);
+    setShareUrl(buildCanonicalShareUrl(slug, lang));
     setCanNativeShare(
       typeof navigator !== 'undefined' && typeof navigator.share === 'function'
     );
-  }, [lang, title]);
+  }, [lang, title, slug]);
 
   const encodedUrl = encodeURIComponent(shareUrl);
   const encodedTitle = encodeURIComponent(title);
@@ -91,7 +104,7 @@ export function SocialShareBar({
   ];
 
   const handleCopyLink = async () => {
-    const urlToCopy = window.location.href;
+    const urlToCopy = buildCanonicalShareUrl(slug, lang);
     try {
       await navigator.clipboard.writeText(urlToCopy);
     } catch {
@@ -114,7 +127,7 @@ export function SocialShareBar({
       await navigator.share({
         title,
         text: summary || title,
-        url: window.location.href,
+        url: buildCanonicalShareUrl(slug, lang),
       });
     } catch {
       // User dismissed native share sheet

@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Menu, X } from 'lucide-react';
 import { UI_COPY, type Language, type ViewRoute } from '../data/blueprints';
+import { BrandLogo } from './BrandLogo';
 
 interface HeaderProps {
   lang: Language;
@@ -33,17 +34,18 @@ export function Header({
 
   return (
     <header className="sticky top-0 z-40 bg-[#0B0F19]/92 backdrop-blur-md border-b border-slate-800/80">
-      <div className="max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8 h-14 sm:h-16 flex items-center justify-between gap-6">
-        {/* Zone 1: Brand Wordmark */}
+      <div className="max-w-[1280px] mx-auto px-3 sm:px-6 lg:px-8 h-14 sm:h-16 flex items-center justify-between gap-3 sm:gap-6">
+        {/* Zone 1: Brand Logo & Wordmark */}
         <a
           href="#home"
+          aria-label={t.brand}
           onClick={(e) => {
             e.preventDefault();
             handleNavClick('home');
           }}
-          className="font-display text-base sm:text-lg font-bold tracking-tight text-slate-100 hover:text-[#00F0FF] transition-colors whitespace-nowrap shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00F0FF] rounded"
+          className="group inline-flex items-center shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00F0FF] rounded-lg py-1"
         >
-          {t.brand}
+          <BrandLogo />
         </a>
 
         {/* Zone 2: 5 Multi-View Nav Links */}

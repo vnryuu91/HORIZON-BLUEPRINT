@@ -1,5 +1,5 @@
 import { useEffect, useState, type FormEvent } from 'react';
-import { ArrowLeft, Bell, Check, X } from 'lucide-react';
+import { ArrowLeft, Bell, Check, Link2, X } from 'lucide-react';
 import {
   BLUEPRINTS,
   CATEGORIES,
@@ -22,6 +22,7 @@ interface CategoryViewProps {
   onToggleFocusMode: () => void;
   onNavigateHome: () => void;
   selectedBlueprintId?: string;
+  onSelectBlueprint?: (blueprintId: string) => void;
 }
 
 export function CategoryView({
@@ -32,6 +33,7 @@ export function CategoryView({
   onToggleFocusMode,
   onNavigateHome,
   selectedBlueprintId,
+  onSelectBlueprint,
 }: CategoryViewProps) {
   const t = UI_COPY[lang];
   const category =
@@ -46,6 +48,7 @@ export function CategoryView({
   const [activeArticleId, setActiveArticleId] = useState<string>(
     selectedBlueprintId || publishedItems[0]?.id || ''
   );
+  const [copiedCardSlug, setCopiedCardSlug] = useState<string | null>(null);
 
   useEffect(() => {
     if (
@@ -55,6 +58,18 @@ export function CategoryView({
       setActiveArticleId(selectedBlueprintId);
     } else {
       setActiveArticleId(publishedItems[0]?.id || '');
+    }
+
+    const targetedInProgress = inProgressItems.find(
+      (b) => b.id === selectedBlueprintId
+    );
+    if (targetedInProgress) {
+      requestAnimationFrame(() => {
+        const el = document.getElementById(`post-${targetedInProgress.slug}`);
+        if (el) {
+          el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      });
     }
   }, [categoryId, selectedBlueprintId]);
 
@@ -158,7 +173,10 @@ export function CategoryView({
                     <button
                       key={item.id}
                       type="button"
-                      onClick={() => setActiveArticleId(item.id)}
+                      onClick={() => {
+                        setActiveArticleId(item.id);
+                        onSelectBlueprint?.(item.id);
+                      }}
                       className={`px-4 py-2 text-xs font-medium rounded-lg border transition-colors cursor-pointer ${
                         isActive
                           ? 'bg-[#00F0FF] text-[#070A12] border-[#00F0FF] font-semibold'
@@ -208,14 +226,47 @@ export function CategoryView({
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {inProgressItems.map((item) => {
                 const isSubscribed = Boolean(subscribedIds[item.id]);
+                const isTargeted = selectedBlueprintId === item.id;
+                const isCopied = copiedCardSlug === item.slug;
+
+                const handleCopyCardUrl = async () => {
+                  const url = new URL(window.location.origin + '/');
+                  url.searchParams.set('post', item.slug);
+                  if (lang === 'en') url.searchParams.set('lang', 'en');
+                  const text = url.toString();
+                  try {
+                    await navigator.clipboard.writeText(text);
+                  } catch {
+                    const ta = document.createElement('textarea');
+                    ta.value = text;
+                    ta.style.position = 'fixed';
+                    ta.style.opacity = '0';
+                    document.body.appendChild(ta);
+                    ta.select();
+                    document.execCommand('copy');
+                    document.body.removeChild(ta);
+                  }
+                  setCopiedCardSlug(item.slug);
+                  setTimeout(() => {
+                    setCopiedCardSlug((prev) =>
+                      prev === item.slug ? null : prev
+                    );
+                  }, 2000);
+                };
+
                 return (
                   <article
                     key={item.id}
+                    id={`post-${item.slug}`}
                     data-content-type={
                       item.contentOrigin || 'speculative-fiction-ai-assisted'
                     }
                     data-ai-coauthored="true"
-                    className="flex flex-col bg-[#111827] border border-slate-800/90 rounded-xl overflow-hidden"
+                    className={`flex flex-col bg-[#111827] border rounded-xl overflow-hidden transition-colors ${
+                      isTargeted
+                        ? 'border-[#00F0FF]/70 ring-1 ring-[#00F0FF]/30'
+                        : 'border-slate-800/90'
+                    }`}
                   >
                     <div className="relative aspect-[16/10] overflow-hidden bg-[#0D1320] border-b border-slate-800/80">
                       <ResilientImage
@@ -283,27 +334,57 @@ export function CategoryView({
                           {item.readTime[lang]}
                         </span>
 
-                        <button
-                          type="button"
-                          onClick={() => handleOpenNotify(item)}
-                          className={`inline-flex items-center gap-2 px-4 py-2 text-xs font-semibold rounded-lg border transition-colors cursor-pointer whitespace-nowrap shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00F0FF] ${
-                            isSubscribed
-                              ? 'bg-[#00F0FF]/15 text-[#00F0FF] border-[#00F0FF]/50'
-                              : 'bg-[#0B0F19] text-slate-100 border-slate-700 hover:border-[#00F0FF] hover:text-[#00F0FF]'
-                          }`}
-                        >
-                          {isSubscribed ? (
-                            <>
-                              <Check className="w-3.5 h-3.5" aria-hidden="true" />
-                              <span>{t.category.notifiedBtn}</span>
-                            </>
-                          ) : (
-                            <>
-                              <Bell className="w-3.5 h-3.5" aria-hidden="true" />
-                              <span>{t.category.notifyBtn}</span>
-                            </>
-                          )}
-                        </button>
+                        <div className="flex items-center gap-2">
+                          <div className="relative inline-flex">
+                            <button
+                              type="button"
+                              onClick={handleCopyCardUrl}
+                              aria-label={t.share.copyLink}
+                              title={t.share.copyLink}
+                              className={`inline-flex items-center justify-center w-9 h-9 rounded-lg border transition-all cursor-pointer ${
+                                isCopied
+                                  ? 'bg-emerald-500/15 border-emerald-400/70 text-emerald-300'
+                                  : 'bg-[#0B0F19] border-slate-700 text-slate-300 hover:text-[#00F0FF] hover:border-[#00F0FF]'
+                              }`}
+                            >
+                              {isCopied ? (
+                                <Check className="w-4 h-4" aria-hidden="true" />
+                              ) : (
+                                <Link2 className="w-4 h-4" aria-hidden="true" />
+                              )}
+                            </button>
+                            {isCopied && (
+                              <span
+                                role="status"
+                                className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2.5 py-1 rounded-md bg-[#090D18] border border-emerald-400/60 text-emerald-300 font-mono text-[11px] whitespace-nowrap shadow-lg pointer-events-none z-50"
+                              >
+                                {t.share.copiedToast}
+                              </span>
+                            )}
+                          </div>
+
+                          <button
+                            type="button"
+                            onClick={() => handleOpenNotify(item)}
+                            className={`inline-flex items-center gap-2 px-4 py-2 text-xs font-semibold rounded-lg border transition-colors cursor-pointer whitespace-nowrap shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00F0FF] ${
+                              isSubscribed
+                                ? 'bg-[#00F0FF]/15 text-[#00F0FF] border-[#00F0FF]/50'
+                                : 'bg-[#0B0F19] text-slate-100 border-slate-700 hover:border-[#00F0FF] hover:text-[#00F0FF]'
+                            }`}
+                          >
+                            {isSubscribed ? (
+                              <>
+                                <Check className="w-3.5 h-3.5" aria-hidden="true" />
+                                <span>{t.category.notifiedBtn}</span>
+                              </>
+                            ) : (
+                              <>
+                                <Bell className="w-3.5 h-3.5" aria-hidden="true" />
+                                <span>{t.category.notifyBtn}</span>
+                              </>
+                            )}
+                          </button>
+                        </div>
                       </div>
                     </div>
                   </article>

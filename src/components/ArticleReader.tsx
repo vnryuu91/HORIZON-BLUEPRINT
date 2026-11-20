@@ -249,6 +249,7 @@ export function ArticleReader({
                     lang={lang}
                     title={blueprint.title[lang]}
                     summary={blueprint.summary[lang]}
+                    slug={blueprint.slug}
                     variant="inline"
                   />
                 </div>
@@ -531,6 +532,7 @@ export function ArticleReader({
                 lang={lang}
                 title={blueprint.title[lang]}
                 summary={blueprint.summary[lang]}
+                slug={blueprint.slug}
                 variant="banner"
               />
             </div>
